@@ -1,0 +1,172 @@
+:root {
+    --main-bg: #1a1a1a;
+    --sidebar-bg: #2a2a2a;
+    --canvas-bg: #1f1f1f;
+    --block-bg: #333333;
+    --block-border: #555555;
+    --accent-color: #4a90e2;
+    --accent-color-alt: #34d399;
+    --text-color: #f0f0f0;
+    --handle-color: #4a90e2;
+    --danger-color: #e54b4b;
+}
+
+body {
+    font-family: 'Pretendard', sans-serif;
+    background-color: var(--main-bg);
+    color: var(--text-color);
+    overflow: hidden;
+}
+
+#canvas-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: var(--canvas-bg);
+    background-image:
+        linear-gradient(rgba(255,255,255,0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.07) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+.block {
+    position: absolute;
+    background-color: var(--block-bg);
+    border: 1px solid var(--block-border);
+    border-radius: 8px;
+    padding: 12px;
+    width: 180px;
+    min-height: 80px;
+    cursor: default; /* 블록 전체의 커서를 기본으로 변경 */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transition: box-shadow 0.2s, height 0.2s ease, background-color 0.2s;
+    touch-action: none;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.block-label {
+    width: 100%;
+    text-align: center;
+    padding: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    white-space: normal;
+    word-break: break-word;
+    flex-grow: 1;
+    cursor: move; /* 레이블(손잡이) 부분만 이동 커서로 변경 */
+}
+
+.block-input {
+    width: 95%;
+    background-color: #444;
+    border: 1px solid #666;
+    border-radius: 4px;
+    color: var(--text-color);
+    padding: 4px;
+    text-align: center;
+    resize: none;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.handle {
+    position: absolute; width: 12px; height: 12px;
+    background-color: var(--handle-color); border: 2px solid white;
+    border-radius: 50%; cursor: crosshair; z-index: 10;
+}
+.handle.handle-top    { top: -7px; left: 50%; transform: translateX(-50%); }
+.handle.handle-right  { right: -7px; top: 50%; transform: translateY(-50%); }
+.handle.handle-bottom { bottom: -7px; left: 50%; transform: translateX(-50%); }
+.handle.handle-left   { left: -7px; top: 50%; transform: translateY(-50%); }
+
+.branch-block .branches-container { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+.branch { position: relative; background-color: #383838; border-radius: 6px; padding: 8px; display: flex; align-items: center; gap: 4px; }
+.branch-input { flex-grow: 1; background: transparent; border: none; color: #ddd; outline: none; }
+.branch .handle.handle-left { left: -15px; top: 50%; transform: translateY(-50%); }
+.branch .handle.handle-right { right: -15px; top: 50%; transform: translateY(-50%); }
+
+.delete-branch-btn, .delete-block-btn { display: none; }
+.delete-mode-active .delete-branch-btn, .delete-mode-active .delete-block-btn { display: flex; }
+
+.delete-branch-btn { background: none; border: none; color: #aaa; cursor: pointer; font-size: 14px; padding: 0 4px; }
+.delete-branch-btn:hover { color: var(--danger-color); }
+.delete-block-btn {
+    position: absolute; top: -10px; right: -10px; width: 20px; height: 20px;
+    background-color: var(--danger-color); color: white; border: 1px solid white;
+    border-radius: 50%; cursor: pointer; justify-content: center; align-items: center;
+    font-size: 12px; line-height: 1; z-index: 11;
+}
+
+.resize-handle {
+    position: absolute; bottom: -5px; right: -5px; width: 10px; height: 10px;
+    background-color: var(--accent-color); border: 1px solid white;
+    border-radius: 2px; cursor: nwse-resize; z-index: 11;
+}
+
+.add-branch-btn {
+    background-color: var(--accent-color); color: white; border: none;
+    border-radius: 4px; padding: 4px 8px; cursor: pointer;
+    margin-top: 8px; font-size: 12px; flex-shrink: 0;
+}
+
+#context-menu {
+    position: fixed; display: none; background-color: var(--sidebar-bg);
+    border-radius: 8px; padding: 8px; z-index: 1000;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+}
+.color-swatch {
+    width: 24px; height: 24px; border-radius: 50%;
+    cursor: pointer; border: 2px solid transparent; transition: transform 0.1s;
+}
+.color-swatch:hover { transform: scale(1.1); }
+
+.leader-line { pointer-events: none; }
+.leader-line.line-deletable { cursor: pointer; pointer-events: auto; }
+.leader-line.line-deletable .leader-line-path, .leader-line.line-deletable .leader-line-arrow {
+      stroke: var(--danger-color) !important;
+}
+
+#add-block { background-color: var(--accent-color); }
+#add-branch-block { background-color: var(--accent-color-alt); }
+#delete-mode-toggle.active { background-color: var(--danger-color); }
+
+/* ─ 삭제 모드에서만 선이 잘 눌리도록 클릭 영역•색상 확대 ─ */
+svg.leader-line.line-deletable {
+  pointer-events: all !important;        /* 부모 svg 도 클릭 가능 */
+}
+svg.leader-line.line-deletable .leader-line-path,
+svg.leader-line.line-deletable .leader-line-arrow {
+  pointer-events: visibleStroke !important; /* 선 굵기 기준으로 클릭 */
+  stroke-width: 8px !important;             /* 👉 살짝 두껍게(보이진 않지만 클릭영역↑) */
+}
+
+/* ─ 삭제 모드용 선 클릭 가능 영역 확대 ─ */
+.leader-line.line-deletable           { pointer-events: all !important; }          /* svg 자체 */
+.leader-line.line-deletable .leader-line-path,
+.leader-line.line-deletable .leader-line-arrow {
+    pointer-events: stroke !important;  /* 스트로크 위만 클릭 */
+    stroke-width: 8px !important;       /* 안 보이는 두께 ↑ (클릭 hit-box 확보) */
+}
+/* ─ 삭제 모드용 선(Hit-Box 확대 + 클릭 허용) ─ */
+.leader-line.line-deletable         { pointer-events: all !important; cursor: pointer; }
+.leader-line.line-deletable .leader-line-path,
+.leader-line.line-deletable .leader-line-arrow {
+  pointer-events: visibleStroke !important; /* 선 위만 클릭 */
+  stroke-width: 8px !important;             /* 실제로 보이진 않지만 클릭 영역↑ */
+}
+/* ─ 선 삭제용 핀 ─ */
+.line-delete-btn{
+  position:absolute; width:18px; height:18px; z-index:9999;
+  background:var(--danger-color); border:2px solid #fff;
+  border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  color:#fff; font-size:14px; line-height:0;
+  box-shadow:0 0 4px rgba(0,0,0,.6); user-select:none;
+}
+.line-delete-btn:hover{ transform:scale(1.15); }
